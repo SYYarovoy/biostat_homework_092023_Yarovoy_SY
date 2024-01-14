@@ -1,0 +1,24 @@
+a = shapiro.test(cleaned_data$BMI)
+?BinomCI
+
+DescTools::BinomCI((968 / 5001), 1, method = "clopper-pearson", conf.level = 0.95, sides = "two.sided")
+
+mosaicplot(x = table(cleaned_data$Gender, cleaned_data$Stroke))
+
+summary(cleaned_data[,2])
+
+?sample
+?rep
+?lapply
+?shapiro.test()
+
+shapiro.test(sample(cleaned_data$BMI, 5000))[2]
+
+?IQR()
+?between()
+
+quantile(cleaned_data$Age, 0.25, na.rm = TRUE) - 1.5 * IQR(Age, na.rm = TRUE)
+cleaned_data[cleaned_data$ID != outliers2$ID,]
+
+qqnorm(cleaned_data$BMI, xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", plot.it = TRUE)
+qqline(cleaned_data$BMI)

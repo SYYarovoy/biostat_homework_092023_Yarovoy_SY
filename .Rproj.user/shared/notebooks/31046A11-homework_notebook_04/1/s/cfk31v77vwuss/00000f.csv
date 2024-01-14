@@ -1,0 +1,9 @@
+"0","data <- read_csv(""data/raw/healthcare-dataset-stroke-data.csv"")"
+"2","[1mRows: [22m[34m5110[39m [1mColumns: [22m[34m12[39m"
+"2","[36m--[39m [1mColumn specification[22m [36m----------------------------------------------------------------------------------[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (6): gender, ever_married, work_type, Residence_type, bmi, smoking_status
+[32mdbl[39m (6): id, age, hypertension, heart_disease, avg_glucose_level, stroke"
+"2","
+[36mi[39m Use `spec()` to retrieve the full column specification for this data.
+[36mi[39m Specify the column types or set `show_col_types = FALSE` to quiet this message."

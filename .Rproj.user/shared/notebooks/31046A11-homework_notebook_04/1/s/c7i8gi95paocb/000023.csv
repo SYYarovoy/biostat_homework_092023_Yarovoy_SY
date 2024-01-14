@@ -1,0 +1,5 @@
+"0",""
+"0","cleaned_data %>% "
+"0","  ggplot() +"
+"0","  geom_bar(aes(x = Ever_married, fill = Stroke)) +"
+"0","  scale_fill_manual(values = c(""93EFF0"", ""495F0A""))"

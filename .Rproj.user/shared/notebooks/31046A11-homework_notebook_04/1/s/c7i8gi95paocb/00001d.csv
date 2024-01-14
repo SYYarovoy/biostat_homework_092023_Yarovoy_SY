@@ -1,0 +1,5 @@
+"0","cleaned_data %>%  "
+"0","  filter(Gender != ""Other"") %>%"
+"0","  ggplot() +"
+"0","  geom_bar(aes(x = Gender, fill = Stroke)) +"
+"0","  scale_fill_manual(values = c(""99CC00"", ""445FAA"")) "

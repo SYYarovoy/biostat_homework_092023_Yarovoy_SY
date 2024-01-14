@@ -1,0 +1,2 @@
+"0",""
+"0","qqnorm(cleaned_data$Average_glucose_level, xlab = ""Theoretical Quantiles"", ylab = ""Sample Quantiles"", plot.it = TRUE)"

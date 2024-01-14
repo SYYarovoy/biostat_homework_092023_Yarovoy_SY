@@ -1,0 +1,5 @@
+"0",""
+"0","cleaned_data %>% "
+"0","  ggplot() +"
+"0","  geom_bar(aes(x = Cardiovascular_diseases, fill = Stroke)) +"
+"0","  scale_fill_manual(values = c(""994E00"", ""334CAA""))"

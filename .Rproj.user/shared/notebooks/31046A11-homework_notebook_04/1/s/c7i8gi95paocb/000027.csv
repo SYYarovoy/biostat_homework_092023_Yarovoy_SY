@@ -1,0 +1,5 @@
+"0",""
+"0","cleaned_data %>% "
+"0","  ggplot() +"
+"0","  geom_bar(aes(x = Residence_type, fill = Stroke)) +"
+"0","  scale_fill_manual(values = c(""99CF00"", ""4BBFAA""))"

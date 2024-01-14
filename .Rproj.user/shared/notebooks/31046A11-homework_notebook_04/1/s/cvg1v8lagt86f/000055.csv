@@ -1,0 +1,4 @@
+"0",""
+"0","# Для переменной BMI"
+"0","mypalette <- brewer.pal(4, ""Paired"")"
+"0","boxplot(BMI ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)"

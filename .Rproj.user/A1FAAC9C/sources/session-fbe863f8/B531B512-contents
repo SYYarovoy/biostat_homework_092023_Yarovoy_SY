@@ -1,0 +1,454 @@
+---
+title: "automatization_notebook_04"
+output: word_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(RColorBrewer)
+library(ggplot2)
+library(ggbeeswarm)
+```
+
+# Чтение данных
+
+В вашем варианте нужно использовать датасет healthcare-dataset-stroke-data.
+
+```{r}
+data <- read_csv("data/raw/healthcare-dataset-stroke-data.csv")
+
+```
+
+# Выведите общее описание данных
+
+```{r}
+summary(data)
+
+```
+
+# Очистка данных
+
+1) Уберите переменные, в которых пропущенных значений больше 20% или уберите субъектов со слишком большим количеством пропущенных значений. Или совместите оба варианта. Напишите обоснование, почему вы выбрали тот или иной вариант:
+
+**Обоснование**: Пропущенные значения есть только по переменным bmi (N/A) и smoking_status ("Unknown"). Таким образом, удаление субъектов с пропущенными значениями нерационально (пропущено не более 2 значений в каждой строке). Удалены переменные с количеством пропущенных значений более 20%.
+
+2) Переименуйте переменные в человекочитаемый вид (что делать с пробелами в названиях?);
+
+3) В соответствии с описанием данных приведите переменные к нужному типу (numeric или factor);
+
+4) Отсортируйте данные по возрасту по убыванию;
+
+5) Сохраните в файл outliers.csv субъектов, которые являются выбросами (например, по правилу трёх сигм) — это необязательное задание со звёздочкой;
+
+6) Присвойте получившийся датасет переменной "cleaned_data".
+
+```{r}
+# Задания 1,2,3,4,6
+tibble(col_names = colnames(data), missed = colSums(is.na(data))) 
+
+# В таблице отсутствуют пропущенные значения, обозначенные как "NA". пробуем посмотреть, какие другие обозначения могли использоваться для пропущенных значений.
+
+data %>%
+  select(id) %>%
+  distinct() %>%
+  arrange(desc(id))
+
+
+data %>%
+  select(gender) %>%
+  distinct() %>%
+  arrange(desc(gender))
+
+data %>%
+  select(age) %>%
+  distinct() %>%
+  arrange(desc(age))
+
+data %>%
+  select(hypertension) %>%
+  distinct() %>%
+  arrange(desc(hypertension))
+
+data %>%
+  select(heart_disease) %>%
+  distinct() %>%
+  arrange(desc(heart_disease))
+
+data %>%
+  select(ever_married) %>%
+  distinct() %>%
+  arrange(desc(ever_married)) 
+
+data %>%
+  select(work_type) %>%
+  distinct() %>%
+  arrange(desc(work_type)) 
+
+data %>%
+  select(Residence_type) %>%
+  distinct() %>%
+  arrange(desc(Residence_type)) 
+
+data %>%
+  select(avg_glucose_level) %>%
+  distinct() %>%
+  arrange(desc(avg_glucose_level)) 
+
+data %>%
+  select(bmi) %>%
+  distinct() %>%
+  arrange(desc(bmi)) 
+
+data %>%
+  select(smoking_status) %>%
+  distinct() %>%
+  arrange(desc(smoking_status)) 
+
+data %>%
+  select(stroke) %>%
+  distinct() %>%
+  arrange(desc(stroke)) 
+
+# Пропущенные значения есть только по переменным bmi (N/A) и smoking_status ("Unknown"). Таким образом, удаление субъектов с пропущенными значениями нерационально (пропущено не более 2 значений в каждой строке). Проверяем обе указанные переменные на количество пропущенных значений и удаляем, если их более 20%.
+
+cleaned_data <- data %>%
+  mutate (across(where(function(x) sum(x == "N/A") > length(x) * 0.2 | sum(x == "Unknown") > length(x) * 0.2), function(x) x = NULL)) %>% # Переменная status_smoking была удалена.
+  rename(ID = id, Gender = gender, Age = age, Hypertension = hypertension, Cardiovascular_diseases = heart_disease, Ever_married = ever_married, Work_type = work_type, Average_glucose_level = avg_glucose_level, BMI = bmi, Stroke = stroke) %>% # Пробелы в названиях оставлены в варианте нижнего подчеркивания для снижения вероятности ошибок при обращении к переменным. Предложенный вариант на английском языке достаточно читаемый, на русский язык переименование не проводилось
+  mutate(across(c(ID, Age, Average_glucose_level, BMI), function(x) as.character(x) %>% na_if(., "N/A") %>% as.numeric())) %>% # Приведение переменных к типу numeric и замена значений "N/A" в переменной BMI на NA
+  mutate(across(c(Gender, Hypertension, Cardiovascular_diseases, Ever_married, Work_type, Residence_type, Stroke), function(x) as.factor(x))) %>% # Приведение переменных к типу factor
+  arrange(desc(Age)) # Сортировка по возрасту
+
+# Задание 5
+outliers <- cleaned_data %>% 
+  filter(!between(Age, mean(Age, na.rm = TRUE) - 3 * sd(Age, na.rm = TRUE), mean(Age, na.rm = TRUE) + 3 * sd(Age, na.rm = TRUE)) | !between(Average_glucose_level, mean(Average_glucose_level, na.rm = TRUE) - 3 * sd(Average_glucose_level, na.rm = TRUE), mean(Average_glucose_level, na.rm = TRUE) + 3 * sd(Average_glucose_level, na.rm = TRUE)) | !between(BMI, mean(BMI, na.rm = TRUE) - 3 * sd(BMI, na.rm = TRUE), mean(BMI, na.rm = TRUE) + 3 * sd(BMI, na.rm = TRUE)))
+
+readr::write_excel_csv(outliers, "data/raw/outliers.csv")
+  
+```
+
+# Сколько осталось переменных?
+
+```{r}
+ncol(cleaned_data)
+
+```
+
+# Сколько осталось случаев?
+
+```{r}
+nrow(cleaned_data)
+
+```
+
+# Есть ли в данных идентичные строки?
+
+```{r}
+ifelse(nrow(cleaned_data) != nrow(cleaned_data %>% distinct()), "Есть", "Нет")
+
+```
+
+# Сколько всего переменных с пропущенными значениями в данных и сколько пропущенных точек в каждой такой переменной?
+
+```{r}
+tibble(col_names = colnames(cleaned_data), missed = colSums(is.na(cleaned_data))) %>%
+  filter(missed != 0) %>%
+  print() %>% # Таблица с переменными, в которых есть проущенные значения и указанием количества пропущенных значений в каждой переменной
+  nrow() # Количество переменных с пропущенными значениями
+
+```
+
+# Описательные статистики
+
+## Количественные переменные
+
+1) Рассчитайте для всех количественных переменных для каждой группы (stroke):
+
+1.1) Количество значений;
+
+1.2) Количество пропущенных значений;
+
+1.3) Среднее;
+
+1.4) Медиану;
+
+1.5) Стандартное отклонение;
+
+1.6) 25% квантиль и 75% квантиль;
+
+1.7) Интерквартильный размах;
+
+1.8) Минимум;
+
+1.9) Максимум;
+
+1.10) 95% ДИ для среднего - задание со звёздочкой.
+
+```{r}
+statistics <- list(
+  `_number_of_values` = ~sum(!is.na(.x)) %>% as.character(),
+  `_number_of_missed_values` = ~sum(is.na(.x)) %>% as.character(),
+  `_mean` = ~ifelse(sum(!is.na(.x)) == 0, "no data", mean(.x, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_median` = ~ifelse(sum(!is.na(.x)) == 0, "no data", median(.x, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_sd` = ~ifelse(sum(!is.na(.x)) == 0, "no data", sd(.x, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_Q1 - Q3` = ~ifelse(sum(!is.na(.x)) == 0, "no data", paste0(quantile(.x, 0.25, na.rm = TRUE) %>% round(2), " - ", quantile(.x, 0.75, na.rm = TRUE))),
+  `_interquartile_range` = ~ifelse(sum(!is.na(.x)) == 0, "no data", quantile(.x, 0.75, na.rm = TRUE) - quantile(.x, 0.25, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_min` = ~ifelse(sum(!is.na(.x)) == 0, "no data", min(.x, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_max` = ~ifelse(sum(!is.na(.x)) == 0, "no data", max(.x, na.rm = TRUE)) %>% round(2) %>% as.character(),
+  `_95%_CI_for_mean` = ~ifelse(sum(!is.na(.x)) == 0, "no data", paste0(DescTools::MeanCI(.x, method = "classic", conf.level = 0.95, sides = "two.sided", na.rm = TRUE)[2] %>% as.numeric() %>% round(2) %>% as.character(), " - ", DescTools::MeanCI(.x, method = "classic", sides = "two.sided", na.rm = TRUE)[3] %>% as.numeric() %>% round(2) %>% as.character()))
+  )
+ 
+cleaned_data %>%
+  select(Stroke, where(is.numeric), -ID) %>%
+  group_by(Stroke) %>%
+  summarise(across(where(is.numeric), statistics)) %>%
+  pivot_longer(!Stroke) %>%
+  separate(name, into = c("variable", "Statistics"), sep = "__")
+
+```
+
+## Категориальные переменные
+
+1) Рассчитайте для всех категориальных переменных для каждой группы (stroke):
+
+1.1) Абсолютное количество;
+
+1.2) Относительное количество внутри группы;
+
+1.3) 95% ДИ для доли внутри группы - задание со звёздочкой.
+
+```{r}
+cleaned_data %>%
+  select(Stroke, Gender) %>%
+  count(Stroke, Gender) %>%
+  group_by(Stroke) %>%
+  mutate(Relative_quantity_in_group = (n / sum(n)) %>% round(4) %>% `*` (100) %>% str_c("%")) %>% 
+  ungroup()
+
+# Строку кода для 95% ДИ не получилось заставить  корректно работать:
+# mutate(`95%_CI` = paste0(DescTools::BinomCI(n/sum(n), 1, method = "clopper-pearson", conf.level = 0.95, sides = "two.sided")[2] %>% as.numeric() %>% round(2) %>% as.character(), " - ", DescTools::BinomCI(n/sum(n), 1, method = "clopper-pearson", conf.level = 0.95, sides = "two.sided")[3] %>% as.numeric() %>% round(2) %>% as.character())) %>%
+
+```
+
+# Визуализация
+
+## Количественные переменные
+
+1) Для каждой количественной переменной сделайте боксплоты по группам. Расположите их либо на отдельных рисунках, либо на одном, но читаемо;
+
+2) Наложите на боксплоты beeplots - задание со звёздочкой.
+
+3) Раскрасьте боксплоты с помощью библиотеки RColorBrewer.
+
+```{r}
+# Для переменной Age
+mypalette <- brewer.pal(4, "Paired")
+boxplot(Age ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)
+mypalette1 <- brewer.pal(4, "Pastel1")
+boxplot(Age ~ Hypertension, cleaned_data, boxwex = 0.5, col = mypalette1)
+mypalette2 <- brewer.pal(4, "Pastel2")
+boxplot(Age ~ Cardiovascular_diseases, cleaned_data, boxwex = 0.5, col = mypalette2)
+mypalette3 <- brewer.pal(4, "Set1")
+boxplot(Age ~ Ever_married, cleaned_data, boxwex = 0.5, col = mypalette3)
+mypalette4 <- brewer.pal(4, "Set2")
+boxplot(Age ~ Work_type, cleaned_data, boxwex = 0.5, col = mypalette4)
+mypalette5 <- brewer.pal(4, "Set3")
+boxplot(Age ~ Residence_type, cleaned_data, boxwex = 0.5, col = mypalette5)
+mypalette6 <- brewer.pal(4, "Accent")
+boxplot(Age ~ Stroke, cleaned_data, boxwex = 0.5, col = mypalette6)
+
+# Для переменной Average_glucose_level
+mypalette <- brewer.pal(4, "Paired")
+boxplot(Average_glucose_level ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)
+mypalette1 <- brewer.pal(4, "Pastel1")
+boxplot(Average_glucose_level ~ Hypertension, cleaned_data, boxwex = 0.5, col = mypalette1)
+mypalette2 <- brewer.pal(4, "Pastel2")
+boxplot(Average_glucose_level ~ Cardiovascular_diseases, cleaned_data, boxwex = 0.5, col = mypalette2)
+mypalette3 <- brewer.pal(4, "Set1")
+boxplot(Average_glucose_level ~ Ever_married, cleaned_data, boxwex = 0.5, col = mypalette3)
+mypalette4 <- brewer.pal(4, "Set2")
+boxplot(Average_glucose_level ~ Work_type, cleaned_data, boxwex = 0.5, col = mypalette4)
+mypalette5 <- brewer.pal(4, "Set3")
+boxplot(Average_glucose_level ~ Residence_type, cleaned_data, boxwex = 0.5, col = mypalette5)
+mypalette6 <- brewer.pal(4, "Accent")
+boxplot(Average_glucose_level ~ Stroke, cleaned_data, boxwex = 0.5, col = mypalette6)
+
+# Для переменной BMI
+mypalette <- brewer.pal(4, "Paired")
+boxplot(BMI ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)
+mypalette1 <- brewer.pal(4, "Pastel1")
+boxplot(BMI ~ Hypertension, cleaned_data, boxwex = 0.5, col = mypalette1)
+mypalette2 <- brewer.pal(4, "Pastel2")
+boxplot(BMI ~ Cardiovascular_diseases, cleaned_data, boxwex = 0.5, col = mypalette2)
+mypalette3 <- brewer.pal(4, "Set1")
+boxplot(BMI ~ Ever_married, cleaned_data, boxwex = 0.5, col = mypalette3)
+mypalette4 <- brewer.pal(4, "Set2")
+boxplot(BMI ~ Work_type, cleaned_data, boxwex = 0.5, col = mypalette4)
+mypalette5 <- brewer.pal(4, "Set3")
+boxplot(BMI ~ Residence_type, cleaned_data, boxwex = 0.5, col = mypalette5)
+mypalette6 <- brewer.pal(4, "Accent")
+boxplot(BMI ~ Stroke, cleaned_data, boxwex = 0.5, col = mypalette6)
+
+
+# ggplot(data = cleaned_data, mapping = aes(x = Stroke, y = Age)) +
+# geom_boxplot() + 
+# geom_beeswarm(size = 0.5, cex = 0.4, shape = 21, stroke = 0.1) +
+# theme_bw()
+
+
+
+```
+
+## Категориальные переменные
+
+1) Сделайте подходящие визуализации категориальных переменных. Обоснуйте, почему выбрали именно этот тип.
+
+Категориальные переменные хорошо описываются гистограммами, мозичными сюжетами и блочными диаграммами. В данном случае и распределение каждой переменной и частоты по 2 переменным на одном графике (например, с учетом переменной Stroke) удобно посмотреть по гистограммам в geom_bar. 
+
+```{r}
+cleaned_data %>%  
+  filter(Gender != "Other") %>%
+  ggplot() +
+  geom_bar(aes(x = Gender, fill = Stroke)) +
+  scale_fill_manual(values = c("99CC00", "445FAA")) 
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Hypertension, fill = Stroke)) +
+  scale_fill_manual(values = c("99AD00", "1E55AA")) 
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Cardiovascular_diseases, fill = Stroke)) +
+  scale_fill_manual(values = c("994E00", "334CAA"))
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Ever_married, fill = Stroke)) +
+  scale_fill_manual(values = c("93EFF0", "495F0A"))
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Work_type, fill = Stroke)) +
+  scale_fill_manual(values = c("78DC00", "4CCFAA"))
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Residence_type, fill = Stroke)) +
+  scale_fill_manual(values = c("99CF00", "4BBFAA"))
+
+cleaned_data %>% 
+  ggplot() +
+  geom_bar(aes(x = Stroke)) +
+  theme_classic()
+
+```
+
+
+# Статистические оценки
+
+## Проверка на нормальность
+
+1) Оцените каждую переменную на соответствие нормальному распределению с помощью теста Шапиро-Уилка. Какие из переменных являются нормальными и как как вы это поняли? 
+Для всех количественных переменных p-value менее 0.05, что позволяет отвергнуть нулевые гипотезы, что распределение этих переменных не отличается от нормального.
+
+```{r}
+# Поскольку функция теста Шапиро-Уилка не разрешает задавать на проверку векторы более чем из 5000 значений, пробуем создать серию выборок по 5000 значений из каждой количественной переменной и в каждой выборке проверить нормальность распределения, подсчитав количество результатов с p-value менее 0.05: 
+
+# Для переменной Age
+df1 <- data.frame(n_test = 1:100, `p-value` = NA)
+for(i in 1:100) {df1$p[i] = shapiro.test(sample(cleaned_data$Age, 5000))[2]}
+print(paste0("Age: p-value = ", sum(df1$p < 0.05))) # Все значения p-value оказались менее 0.05 - распределение переменной Age отлично от нормального.
+
+# Можно также попробовать убрать выбросы (по правилу 3 сигм остается более 5000 значений, поэтому пробуем другой вариант поиска выбросов - менее quantile(0.25) - 1.5 * IQR или более quantile(0.75) + 1.5 * IQR:
+n_outliers <- cleaned_data %>%
+  filter(between(Age, quantile(Age, 0.25, na.rm = TRUE) - 1.5 * IQR(Age, na.rm = TRUE), quantile(Age, 0.75, na.rm = TRUE) + 1.5 * IQR(Age, na.rm = TRUE)) & between(Average_glucose_level, quantile(Average_glucose_level, 0.25, na.rm = TRUE) - 1.5 * IQR(Average_glucose_level, na.rm = TRUE), quantile(Average_glucose_level, 0.75, na.rm = TRUE) + 1.5 * IQR(Average_glucose_level, na.rm = TRUE)) & between(BMI, quantile(Age, 0.25, na.rm = TRUE) - 1.5 * IQR(BMI, na.rm = TRUE), quantile(BMI, 0.75, na.rm = TRUE) + 1.5 * IQR(BMI, na.rm = TRUE)))
+
+shapiro.test(n_outliers$Age) # Значение p-value  менее 0.05 - распределение переменной Age отлично от нормального.
+
+# Для переменной Average_glucose_level
+df2 <- data.frame(n_test = 1:100, `p-value` = NA)
+for(i in 1:100) {df2$p[i] = shapiro.test(sample(cleaned_data$Average_glucose_level, 5000))[2]}
+print(paste0("Average_glucose_rate: p-value = ", sum(df2$p < 0.05))) # Все значения p-value оказались менее 0.05 - распределение переменной BMI отлично от нормального.
+
+# Исключение выбросов:
+n_outliers <- cleaned_data %>%
+  filter(between(Age, quantile(Age, 0.25, na.rm = TRUE) - 1.5 * IQR(Age, na.rm = TRUE), quantile(Age, 0.75, na.rm = TRUE) + 1.5 * IQR(Age, na.rm = TRUE)) & between(Average_glucose_level, quantile(Average_glucose_level, 0.25, na.rm = TRUE) - 1.5 * IQR(Average_glucose_level, na.rm = TRUE), quantile(Average_glucose_level, 0.75, na.rm = TRUE) + 1.5 * IQR(Average_glucose_level, na.rm = TRUE)) & between(BMI, quantile(BMI, 0.25, na.rm = TRUE) - 1.5 * IQR(BMI, na.rm = TRUE), quantile(BMI, 0.75, na.rm = TRUE) + 1.5 * IQR(BMI, na.rm = TRUE)))
+
+shapiro.test(n_outliers$Average_glucose_level) # Значение p-value  менее 0.05 - распределение переменной BMI отлично от нормального.
+
+# Для переменной BMI
+df3 <- data.frame(n_test = 1:100, `p-value` = NA)
+for(i in 1:100) {df3$p[i] = shapiro.test(sample(cleaned_data$BMI, 5000))[2]}
+print(paste0("BMI: p-value = ", sum(df3$p < 0.05))) # Все значения p-value оказались менее 0.05 - распределение переменной BMI отлично от нормального.
+
+# Исключение выбросов:
+n_outliers <- cleaned_data %>%
+  filter(between(Age, quantile(Age, 0.25, na.rm = TRUE) - 1.5 * IQR(Age, na.rm = TRUE), quantile(Age, 0.75, na.rm = TRUE) + 1.5 * IQR(Age, na.rm = TRUE)) & between(Average_glucose_level, quantile(Average_glucose_level, 0.25, na.rm = TRUE) - 1.5 * IQR(Average_glucose_level, na.rm = TRUE), quantile(Average_glucose_level, 0.75, na.rm = TRUE) + 1.5 * IQR(Average_glucose_level, na.rm = TRUE)) & between(BMI, quantile(BMI, 0.25, na.rm = TRUE) - 1.5 * IQR(BMI, na.rm = TRUE), quantile(BMI, 0.75, na.rm = TRUE) + 1.5 * IQR(BMI, na.rm = TRUE)))
+
+shapiro.test(n_outliers$BMI) # Значение p-value  менее 0.05 - распределение переменной BMI отлично от нормального.
+  
+
+```
+
+2) Постройте для каждой количественной переменной QQ-плот. Отличаются ли выводы от теста Шапиро-Уилка? Какой метод вы бы предпочли и почему?
+Выводы от теста Шапиро-Уилка не отличаются - распределение всех количественных переменных (Age, Average_glucose_level, BMI) отличаются от нормальных. Графический метод позволяет проще оценить распределение, но не всегда дает возможность сделать точный вывод (без знания p-value). Также QQ-plot не ограничивает длину переменной.
+
+```{r}
+qqnorm(cleaned_data$Age, xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", plot.it = TRUE)
+qqline(cleaned_data$Age)
+
+qqnorm(cleaned_data$Average_glucose_level, xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", plot.it = TRUE)
+qqline(cleaned_data$Average_glucose_level)
+
+qqnorm(cleaned_data$BMI, xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", plot.it = TRUE)
+qqline(cleaned_data$BMI)
+
+```
+
+3) Ниже напишите, какие ещё методы проверки на нормальность вы знаете и какие у них есть ограничения.
+
+**Напишите текст здесь**
+
+Тест Колмогорова-Смирнова. Ограничения: выборка должна быть была достаточно большой. При сопоставлении двух эмпирических распределений необходимо, чтобы n1,2 ≥ 50. Переменные должны быть упорядочены по нарастанию или убыванию какого-либо признака.
+
+Тест Шапиро-Франсия, тест Андерсона-Дарлинга.
+
+
+## Сравнение групп
+
+1) Сравните группы (переменная **stroke**) по каждой переменной (как количественной, так и категориальной). Для каждой переменной выберите нужный критерий и кратко обоснуйте его выбор в комментариях.
+
+```{r}
+
+
+
+```
+
+# Далее идут **необязательные** дополнительные задания, которые могут принести вам дополнительные баллы в том числе в случае ошибок в предыдущих
+
+## Корреляционный анализ
+
+1) Создайте корреляционную матрицу с визуализацией и поправкой на множественные сравнения. Объясните, когда лучше использовать корреляционные матрицы и в чём минусы и плюсы корреляционных исследований.
+
+```{r}
+
+
+
+```
+
+## Моделирование
+
+1) Постройте регрессионную модель для переменной **stroke**. Опишите процесс построения
+
+```{r}
+
+
+
+```
+
+
+
+

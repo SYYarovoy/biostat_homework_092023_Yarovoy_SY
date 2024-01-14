@@ -1,0 +1,6 @@
+"0","cleaned_data %>%"
+"0","  select(Stroke, Gender) %>%"
+"0","  count(Stroke, Gender) %>%"
+"0","  group_by(Stroke) %>%"
+"0","  mutate(Relative_quantity_in_group = (n / sum(n)) %>% round(4) %>% `*` (100) %>% str_c(""%"")) %>% "
+"0","  ungroup()"

@@ -1,0 +1,2 @@
+"0","mypalette3 <- brewer.pal(4, ""Set1"")"
+"0","boxplot(BMI ~ Ever_married, cleaned_data, boxwex = 0.5, col = mypalette3)"

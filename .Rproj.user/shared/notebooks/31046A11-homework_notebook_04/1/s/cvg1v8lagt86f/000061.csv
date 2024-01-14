@@ -1,0 +1,2 @@
+"0","mypalette6 <- brewer.pal(4, ""Accent"")"
+"0","boxplot(BMI ~ Stroke, cleaned_data, boxwex = 0.5, col = mypalette6)"

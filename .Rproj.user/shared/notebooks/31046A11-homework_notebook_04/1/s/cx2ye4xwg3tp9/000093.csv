@@ -1,0 +1,13 @@
+"1","
+"
+"0","lapply(X = c(""Gender"", ""Work_type""), function(i) {"
+"0","  cleaned_data %>% "
+"0","  select(Stroke, all_of(i)) %>%"
+"0","  table %>%"
+"0","  chisq.test(., simulate.p.value = TRUE, B = 1000) %>%"
+"0","  broom::tidy() %>%"
+"0","  mutate(var = paste0(""Stroke vs "", i), .before = ""statistic"")"
+"0","  }"
+"0",")"
+"1","[[1]]
+"

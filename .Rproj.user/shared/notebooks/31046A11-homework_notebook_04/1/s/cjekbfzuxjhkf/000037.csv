@@ -1,0 +1,5 @@
+"0",""
+"0","data %>%"
+"0","  select(work_type) %>%"
+"0","  distinct() %>%"
+"0","  arrange(desc(work_type)) "

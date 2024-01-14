@@ -1,0 +1,6 @@
+"0",""
+"0","cleaned_data %>% "
+"0","  ggplot() +"
+"0","  geom_bar(aes(x = Stroke)) +"
+"0","  theme_classic()"
+"0",""

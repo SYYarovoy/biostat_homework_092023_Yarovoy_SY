@@ -1,0 +1,3 @@
+"0","# Для переменной Age"
+"0","mypalette <- brewer.pal(4, ""Paired"")"
+"0","boxplot(Age ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)"

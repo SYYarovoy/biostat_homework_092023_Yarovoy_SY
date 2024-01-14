@@ -1,0 +1,2 @@
+"0","mypalette1 <- brewer.pal(4, ""Pastel1"")"
+"0","boxplot(Average_glucose_level ~ Hypertension, cleaned_data, boxwex = 0.5, col = mypalette1)"

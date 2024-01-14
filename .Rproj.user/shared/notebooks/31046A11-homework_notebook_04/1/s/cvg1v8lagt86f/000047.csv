@@ -1,0 +1,4 @@
+"0",""
+"0","# Для переменной Average_glucose_level"
+"0","mypalette <- brewer.pal(4, ""Paired"")"
+"0","boxplot(Average_glucose_level ~ Gender, cleaned_data, boxwex = 0.5, col = mypalette)"

@@ -1,0 +1,2 @@
+"0","# Задания 1,2,3,4,6"
+"0","tibble(col_names = colnames(data), missed = colSums(is.na(data))) "

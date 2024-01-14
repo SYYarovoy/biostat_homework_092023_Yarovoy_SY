@@ -1,0 +1,1 @@
+"0","qqnorm(cleaned_data$Age, xlab = ""Theoretical Quantiles"", ylab = ""Sample Quantiles"", plot.it = TRUE)"

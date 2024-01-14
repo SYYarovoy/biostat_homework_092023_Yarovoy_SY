@@ -1,0 +1,2 @@
+"0","mypalette2 <- brewer.pal(4, ""Pastel2"")"
+"0","boxplot(Age ~ Cardiovascular_diseases, cleaned_data, boxwex = 0.5, col = mypalette2)"

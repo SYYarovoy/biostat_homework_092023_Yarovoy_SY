@@ -1,0 +1,4 @@
+"0",""
+"0","# Строку кода для 95% ДИ не получилось заставить  корректно работать:"
+"0","# mutate(`95%_CI` = paste0(DescTools::BinomCI(n/sum(n), 1, method = ""clopper-pearson"", conf.level = 0.95, sides = ""two.sided"")[2] %>% as.numeric() %>% round(2) %>% as.character(), "" - "", DescTools::BinomCI(n/sum(n), 1, method = ""clopper-pearson"", conf.level = 0.95, sides = ""two.sided"")[3] %>% as.numeric() %>% round(2) %>% as.character())) %>%"
+"0",""
